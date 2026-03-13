@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Coordenadas SBO</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.8.0/proj4.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-excel">
+            <div class="logo-placeholder">SBO</div>
+            <h2>Conversor de Coordenadas Full</h2>
+        </div>
+
+        <div class="inputs-container">
+            <div class="input-card">
+                <label>📍 Grados Decimales (Lat, Lon)</label>
+                <textarea id="inputDecimal" rows="5" placeholder="Ejemplo:&#10;10.5041350  -66.9017070"></textarea>
+                <button onclick="procesarDecimales()" class="btn-convert">Convertir a UTM</button>
+            </div>
+
+            <div class="input-card">
+                <label>🗺️ UTM (Este, Norte, Zona)</label>
+                <textarea id="inputUTM" rows="5" placeholder="Ejemplo:&#10;729648  1161919  19"></textarea>
+                <button onclick="procesarUTM()" class="btn-convert btn-utm">Convertir a Decimales</button>
+            </div>
+        </div>
+
+        <div class="actions-main">
+            <button onclick="limpiarTabla()" class="btn-clear">Limpiar Todo</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th class="main-header">#</th>
+                        <th colspan="2" class="main-header">
+                            Grados decimales
+                            <button class="btn-copy-small" onclick="copiarDecimales()">Copiar</button>
+                        </th>
+                        <th colspan="4" class="main-header">
+                            UTM (WGS84)
+                            <div class="btn-group-copy">
+                                <button class="btn-copy-small" onclick="copiarUTM('XY')">Copiar X/Y</button>
+                                <button class="btn-copy-small" onclick="copiarUTM('XYZ')">Copiar X/Y/Z</button>
+                            </div>
+                        </th>
+                        <th colspan="2" class="main-header">GMS</th>
+                        <th class="main-header">Garmin</th>
+                    </tr>
+                    <tr class="sub-header">
+                        <th>N°</th>
+                        <th>Latitud</th>
+                        <th>Longitud</th>
+                        <th>Este (X)</th>
+                        <th>Norte (Y)</th>
+                        <th>Zona</th>
+                        <th>Banda</th>
+                        <th>Latitud</th>
+                        <th>Longitud</th>
+                        <th>Waypoint</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
