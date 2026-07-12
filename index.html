@@ -4,14 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conversor de Coordenadas SBO</title>
+    <!-- Tu CSS actual -->
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.8.0/proj4.js"></script>
+    <style>
+        /* Pequeño ajuste CSS para el nuevo selector dentro de la tarjeta UTM */
+        .utm-controls { display: flex; gap: 10px; margin-bottom: 5px; }
+        .utm-controls select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-family: inherit;}
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="header-excel">
             <div class="logo-placeholder">SBO</div>
-            <h2>Conversor de Coordenadas Full</h2>
+            <h2>Conversor de Coordenadas Full (Global)</h2>
         </div>
 
         <div class="inputs-container">
@@ -23,6 +29,13 @@
 
             <div class="input-card">
                 <label>🗺️ UTM (Este, Norte, Zona)</label>
+                <div class="utm-controls">
+                    <label for="hemisferioUTM" style="align-self: center; font-size: 0.9em;">Hemisferio:</label>
+                    <select id="hemisferioUTM">
+                        <option value="N">Norte (N)</option>
+                        <option value="S">Sur (S)</option>
+                    </select>
+                </div>
                 <textarea id="inputUTM" rows="5" placeholder="Ejemplo:&#10;729648  1161919  19"></textarea>
                 <button onclick="procesarUTM()" class="btn-convert btn-utm">Convertir a Decimales</button>
             </div>
@@ -32,6 +45,7 @@
             <button onclick="limpiarTabla()" class="btn-clear">Limpiar Todo</button>
         </div>
 
+        <!-- El resto de tu tabla HTML se mantiene exactamente igual -->
         <div class="table-wrapper">
             <table id="resultTable">
                 <thead>
