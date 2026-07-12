@@ -21,38 +21,77 @@ function procesarDecimales() {
 
 function procesarUTM() {
     const txt = document.getElementById('inputUTM').value.trim();
-    if (txt) ejecutarConversion(txt, 'UTM');
+    // Le pasamos al conversor el hemisferio seleccionado en el menú
+    const hemisferio = document.getElementById('hemisferioUTM').value;
+    if (txt) ejecutarConversion(txt, 'UTM', hemisferio);
     document.getElementById('inputUTM').value = '';
 }
 
-function ejecutarConversion(texto, tipo) {
+function ejecutarConversion(texto, tipo, hemisferio = 'N') {
     const rows = texto.split('\n');
     const tbody = document.querySelector('#resultTable tbody');
 
     rows.forEach(row => {
+        // Limpiamos los espacios extras en blanco
         const cols = row.split(/\s+/).filter(c => c !== "");
+        
         if (cols.length >= 2) {
             let lat, lon, x, y, zona;
+            let esValido = true; // Flag para controlar errores por fila
+
             if (tipo === 'DECIMAL') {
                 lat = parseFloat(cols[0].replace(',', '.'));
                 lon = parseFloat(cols[1].replace(',', '.'));
-                zona = Math.floor((lon + 180) / 6) + 1;
-                const utmP = `+proj=utm +zone=${zona} ${lat < 0 ? "+south" : ""} +datum=WGS84 +units=m +no_defs`;
-                [x, y] = proj4(wgs84, utmP, [lon, lat]);
+                
+                if(isNaN(lat) || isNaN(lon)) {
+                    esValido = false;
+                } else {
+                    // Cálculo matemático global para determinar la zona UTM desde la longitud
+                    zona = Math.floor((lon + 180) / 6) + 1;
+                    
+                    // Si la latitud es negativa, el UTM requiere el parámetro sur
+                    const sufijoSur = lat < 0 ? " +south" : "";
+                    const utmP = `+proj=utm +zone=${zona}${sufijoSur} +datum=WGS84 +units=m +no_defs`;
+                    
+                    [x, y] = proj4(wgs84, utmP, [lon, lat]);
+                }
+
             } else {
-                x = parseFloat(cols[0].replace(',', '.'));
-                y = parseFloat(cols[1].replace(',', '.'));
-                zona = cols[2] ? parseInt(cols[2]) : 19;
-                const utmP = `+proj=utm +zone=${zona} ${y > 5000000 ? "+south" : ""} +datum=WGS84 +units=m +no_defs`;
-                [lon, lat] = proj4(utmP, wgs84, [x, y]);
+                // Validación para asegurar que el usuario ingresó la Zona (columna 3)
+                if (cols.length < 3) {
+                    alert(`Error en fila UTM: Faltan datos (se requiere Este, Norte y Zona).\nFila: ${row}`);
+                    esValido = false;
+                } else {
+                    x = parseFloat(cols[0].replace(',', '.'));
+                    y = parseFloat(cols[1].replace(',', '.'));
+                    zona = parseInt(cols[2]);
+                    
+                    if(isNaN(x) || isNaN(y) || isNaN(zona)) {
+                        esValido = false;
+                    } else {
+                        // Construcción de la proyección UTM Global basada en el selector
+                        const sufijoSur = hemisferio === 'S' ? " +south" : "";
+                        const utmP = `+proj=utm +zone=${zona}${sufijoSur} +datum=WGS84 +units=m +no_defs`;
+                        
+                        [lon, lat] = proj4(utmP, wgs84, [x, y]);
+                    }
+                }
             }
-            if (!isNaN(lat)) {
+            
+            // Si la conversión fue exitosa (no retornó NaN y pasó validaciones)
+            if (esValido && !isNaN(lat)) {
                 contadorItems++;
                 const b = obtenerBanda(lat);
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${contadorItems}</td><td>${lat.toFixed(8)}</td><td>${lon.toFixed(8)}</td>
-                    <td>${x.toFixed(3)}</td><td>${y.toFixed(3)}</td><td>${zona}</td><td>${b}</td>
-                    <td>${decimalToDMS(lat, true)}</td><td>${decimalToDMS(lon, false)}</td>
+                tr.innerHTML = `<td>${contadorItems}</td>
+                    <td>${lat.toFixed(8)}</td>
+                    <td>${lon.toFixed(8)}</td>
+                    <td>${x.toFixed(3)}</td>
+                    <td>${y.toFixed(3)}</td>
+                    <td>${zona}</td>
+                    <td>${b}</td>
+                    <td>${decimalToDMS(lat, true)}</td>
+                    <td>${decimalToDMS(lon, false)}</td>
                     <td>${zona}${b} ${Math.round(x)} ${Math.round(y)}</td>`;
                 tbody.appendChild(tr);
             }
@@ -75,4 +114,7 @@ function copiarUTM(fmt) {
     if(t) navigator.clipboard.writeText(t).then(() => alert("UTM copiados"));
 }
 
-function limpiarTabla() { document.querySelector('#resultTable tbody').innerHTML = ''; contadorItems = 0; }
+function limpiarTabla() { 
+    document.querySelector('#resultTable tbody').innerHTML = ''; 
+    contadorItems = 0; 
+}
